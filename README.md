@@ -4,13 +4,13 @@ While studying for our finals, we realised that study spots in NUS are always ta
 ## What it does
 Provides numerous features that enable you to find a study venue that best caters to your needs:
 
-1. `**/room**`
+1. **`/room`**
     - Checks the usage of specific study veNUeS provided by the user  
-2. `**/locations**`
+2. **`/locations`**
     - Provides a list of available veNUeS at a selected faculty/location along with their time of availability
-3. `**/availability**` or `**/avail**`
+3. **`/availability`** or **`/avail`**
     - Searches for the available veNUeS at a selected faculty/location during a given time period
-4. `**/nearme**`
+4. **`/nearme`**
     - Finds 10 nearest available veNUeS to the user in a given time period
 
 ## How we built it
