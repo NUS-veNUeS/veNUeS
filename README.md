@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/35778042/148596374-abae7ffd-0f39-4d27-8991-d8889d50d84e.png" />
+</p>
+
 ## Inspiration
 While studying for our finals, we realised that study spots in NUS are always taken up and we had to resort to finding empty rooms to study in. We made use of the venues feature on NUSMods to find such rooms but we found it inconvenient to use the website and there wasn't a feature to sort by the nearest study venues to our location. Using our phones to find the venues on the website can be quite a hassle as well due to the small screen size. Hence we decided to make it convenient to find venues through the use of a Telegram Bot, giving a more seamless experience.
 
