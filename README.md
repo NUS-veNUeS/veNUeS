@@ -18,3 +18,6 @@ We made use of Telegram as our platform due to its popularity and ease of use! W
 
 ## Challenges we ran into
 We had to preprocess the venue data given by the NUSMods API before we can make use of the data for our project. We also had to plan our database structure properly to avoid making too many changes further down the road. We tried to make things scalable as well, which was pretty challenging as we lack experience in planning. We also have to find ways to manage our API keys and deployment of the Telegram Bot.
+
+## What's next for veNUeS
+We plan to add more social features and expand the capabilities of searching! We hope to collaborate with NUS to allow students to book empty rooms to hold meetings, discussions, or study sessions.
