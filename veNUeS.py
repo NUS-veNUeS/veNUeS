@@ -29,10 +29,11 @@ API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY)
 
 # Config database
-cred = credentials.Certificate("./serviceAccountKey.json")
-firebase_admin.initialize_app(cred, {
-        'databaseURL': os.getenv('databaseURL')
-    })
+if not firebase_admin._apps:
+    cred = credentials.Certificate("./serviceAccountKey.json")
+    firebase_admin.initialize_app(cred, {
+            'databaseURL': os.getenv('databaseURL')
+        })
 
 NUM_RESULTS = 10
 
@@ -83,7 +84,7 @@ def help(message):
     Command that returns a list of available commands and a short description of their function
     """
     chat_id = message.chat.id
-    message = "Here is a list of my commands\!\n" + "\n/start: Starts the bot" + "\n/room: Checks whether veNUeS are available in the given time period" + "\n/locations: Lists veNUeS that are currently available in the specified location/faculty" + "\n/avail or /availability: Check which veNUeS are available at a specific location/faculty and given time period" + "\n/nearme: List nearest 10 veNUeS that are available in a given time period\n\n_Note: Above commands assume queries for the current day_"
+    message = "Here is a list of my commands\!\n" + "\n/start: Starts the bot" + "\n/room: Checks whether veNUeS are available in the next hour" + "\n/locations: Lists veNUeS that are currently available in the specified location/faculty" + "\n/avail or /availability: Check which veNUeS are available at a specific location/faculty and given time period" + "\n/nearme: List nearest 10 veNUeS that are available in a given time period\n\n_Note: Above commands assume queries for the current day_"
 
     bot.send_message(chat_id=chat_id, text=message, parse_mode="MarkdownV2")
     return
@@ -177,6 +178,11 @@ def getCurrentDay():
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     today = datetime.today().weekday()
     return days[today]
+
+def getMapsString(rm):
+    lat = str(VENUES[rm]['lat'])
+    long = str(VENUES[rm]['long'])
+    return "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long
 
 @bot.message_handler(commands=['locations'])
 def locations(message):
@@ -273,7 +279,7 @@ def handle_callback(call):
 
         i = 1
         for rm in room_dict:
-            msg = f'\n• {rm} is available for next {room_dict[rm]} hrs'
+            msg = f'\n• [{rm}]({getMapsString(rm)}) is available for next {room_dict[rm]} hrs'
             chat_message = chat_message + msg
             i += 1
             if i > NUM_RESULTS:
@@ -281,7 +287,8 @@ def handle_callback(call):
 
         bot.send_message(
           chat_id=chat_id,
-          text=chat_message
+          text=chat_message,
+          parse_mode="Markdown"
         )
         return
 
@@ -338,14 +345,15 @@ def parse_time(message, location):
     msg = f"These are the veNUeS that are available from {start_time} to {end_time}:"
     i = 1
     for location in available_locations:
-        msg += f'\n{i}. {location}'
+        msg += f'\n• [{location}]({getMapsString(location)})'
         i += 1
         if i > NUM_RESULTS:
             break
 
     bot.send_message(
       chat_id=chat_id,
-      text=msg
+      text=msg,
+      parse_mode="Markdown"
     )
     return
 
@@ -431,16 +439,13 @@ def nearest_available_venues(message, pq):
 
 
     msg = f"These are the veNUeS that are available from {start_time} to {end_time} near you:"
-    i = 1
     for location in available_locations:
-        msg += f'\n{i}. {location}'
-        i += 1
-        # if i > NUM_RESULTS:
-        #   break
+        msg += f'\n• [{location}]({getMapsString(location)})'
 
     bot.send_message(
       chat_id=chat_id,
-      text=msg
+      text=msg,
+      parse_mode="Markdown"
     )
     return
 
