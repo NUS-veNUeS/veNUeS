@@ -34,7 +34,6 @@ firebase_admin.initialize_app(cred, {
         'databaseURL': os.getenv('databaseURL')
     })
 
-TIME = datetime(2022, 1, 12, 10, 0, 0) # for demonstration purposes
 NUM_RESULTS = 10
 
 docs = db.reference("/venues")
@@ -158,8 +157,7 @@ def getTimeRounded():
     tz = timezone('Asia/Singapore')
     t = datetime.now(tz)
     min_aware = datetime.min.replace(tzinfo=tz)
-    # rounded = t + (min_aware - t) % timedelta(minutes=30) - timedelta(minutes=35)
-    rounded = TIME # temporary assignment for demonstration
+    rounded = t + (min_aware - t) % timedelta(minutes=30) - timedelta(minutes=35)
     current_time = rounded.strftime("%H%M")
     return current_time
 
@@ -177,8 +175,7 @@ def getTimeRoundedUp(time):
 
 def getCurrentDay():
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    # today = datetime.today().weekday()
-    today = TIME.weekday()
+    today = datetime.today().weekday()
     return days[today]
 
 @bot.message_handler(commands=['locations'])
