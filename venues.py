@@ -29,6 +29,7 @@ from venues_store import LOCATIONS, VENUES_LIST, LOCATIONKEYS
 load_dotenv()
 
 server = Flask(__name__)
+PORT = int(os.environ.get('PORT', 5000))
 
 # Config for NUS_veNUeSBot
 API_KEY = os.getenv('API_KEY')
@@ -562,10 +563,24 @@ def handle_message(message):
     bot.send_message(chat_id=message.chat.id,
                      text="Sorry, I didn't understand that command. :(")
 
+# Server code
+@server.route('/' + API_KEY, methods=['POST'])
+def getMessage():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://nus-venuesbot.com/' + API_KEY)
+    return "!", 200
+
 
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 
 if __name__ == "__main__":
    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
-   bot.infinity_polling()
