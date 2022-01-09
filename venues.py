@@ -17,7 +17,6 @@ from telebot.types import (
 from datetime import datetime, timedelta
 from pytz import timezone
 from dotenv import load_dotenv
-from flask import Flask, request
 
 import firebase_admin
 from firebase_admin import credentials
@@ -27,8 +26,6 @@ import difflib
 from venues_store import LOCATIONS, VENUES_LIST, LOCATIONKEYS
 
 load_dotenv()
-
-server = Flask(__name__)
 
 # Config for NUS_veNUeSBot
 API_KEY = os.getenv('API_KEY')
@@ -567,5 +564,4 @@ bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 
 if __name__ == "__main__":
-   server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
    bot.infinity_polling()
