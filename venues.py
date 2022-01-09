@@ -17,6 +17,7 @@ from telebot.types import (
 from datetime import datetime, timedelta
 from pytz import timezone
 from dotenv import load_dotenv
+from flask import Flask, request
 
 import firebase_admin
 from firebase_admin import credentials
@@ -26,6 +27,7 @@ import difflib
 from venues_store import LOCATIONS, VENUES_LIST, LOCATIONKEYS
 
 load_dotenv()
+server = Flask(__name__)
 
 # Config for NUS_veNUeSBot
 API_KEY = os.getenv('API_KEY')
@@ -66,6 +68,7 @@ def euclidean_distance(lat, long, other_lat, other_long):
     """Calculates the euclidean distance between two points"""
     return math.sqrt(math.pow(lat - other_lat, 2)
                      + math.pow(long - other_long, 2))
+
 
 # Commands available
 bot.set_my_commands([
@@ -560,8 +563,22 @@ def handle_message(message):
                      text="Sorry, I didn't understand that command. :(")
 
 
-bot.enable_save_next_step_handlers(delay=2)
-bot.load_next_step_handlers()
+@server.route('/' + API_KEY, methods=['POST'])
+def getMessage():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://nus-venuesbot.herokuapp.com/' + API_KEY)
+    return "!", 200
+
 
 if __name__ == "__main__":
-   bot.infinity_polling()
+    bot.enable_save_next_step_handlers(delay=2)
+    bot.load_next_step_handlers()
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))

@@ -1,1 +1,1 @@
-worker: python3 venues.py
+web: python3 venues.py
