@@ -7,16 +7,16 @@ import re
 
 import telebot
 from telebot.types import (
-  BotCommand,
-  KeyboardButton,
-  InlineKeyboardButton,
-  InlineKeyboardMarkup,
-  ReplyKeyboardMarkup,
+    BotCommand,
+    KeyboardButton,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
 )
 
 from datetime import datetime, timedelta
 from pytz import timezone
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
 import firebase_admin
 from firebase_admin import credentials
@@ -33,23 +33,22 @@ bot = telebot.TeleBot(API_KEY)
 
 # Config database
 cert = {
-  "type": os.getenv('type'),
-  "project_id": os.getenv('project_id'),
-  "private_key_id": os.getenv('private_key_id'),
-  "private_key": os.getenv('private_key'),
-  "client_email": os.getenv('client_email'),
-  "client_id": os.getenv('client_id'),
-  "auth_uri": os.getenv('auth_uri'),
-  "token_uri": os.getenv('token_uri'),
-  "auth_provider_x509_cert_url": os.getenv('auth_provider_x509_cert_url'),
-  "client_x509_cert_url": os.getenv('client_x509_cert_url')
+    "type": os.getenv('type'),
+    "project_id": os.getenv('project_id'),
+    "private_key_id": os.getenv('private_key_id'),
+    "private_key": os.environ.get('private_key').replace('\\n', '\n'),
+    "client_email": os.getenv('client_email'),
+    "client_id": os.getenv('client_id'),
+    "auth_uri": os.getenv('auth_uri'),
+    "token_uri": os.getenv('token_uri'),
+    "auth_provider_x509_cert_url": os.getenv('auth_provider_x509_cert_url'),
+    "client_x509_cert_url": os.getenv('client_x509_cert_url')
 }
-
 if not firebase_admin._apps:
     cred = credentials.Certificate(cert)
     firebase_admin.initialize_app(cred, {
-            'databaseURL': os.getenv('databaseURL')
-        })
+        'databaseURL': os.getenv('databaseURL')
+    })
 
 NUM_RESULTS = 10
 
@@ -68,15 +67,17 @@ def euclidean_distance(lat, long, other_lat, other_long):
     return math.sqrt(math.pow(lat - other_lat, 2)
                      + math.pow(long - other_long, 2))
 
+
 # Commands available
 bot.set_my_commands([
-  BotCommand('start', 'Starts the bot'),
-  BotCommand('help', 'Lists all commands'),
-  BotCommand('room', 'Venue availability in next 1h'),
-  BotCommand('locations', 'Currently available venues in specified location'),
-  BotCommand('availability', 'Find available venues at a given time period'),
-  BotCommand('nearme', 'Nearest 10 available locations in given time period')
+    BotCommand('start', 'Starts the bot'),
+    BotCommand('help', 'Lists all commands'),
+    BotCommand('room', 'Venue availability in next 1h'),
+    BotCommand('locations', 'Currently available venues in specified location'),
+    BotCommand('availability', 'Find available venues at a given time period'),
+    BotCommand('nearme', 'Nearest 10 available locations in given time period')
 ])
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -100,10 +101,13 @@ def help(message):
     Command that returns a list of available commands and a short description of their function
     """
     chat_id = message.chat.id
-    message = "Here is a list of my commands\!\n" + "\n/start: Starts the bot" + "\n/room: Checks whether veNUeS are available in the next hour" + "\n/locations: Lists veNUeS that are currently available in the specified location/faculty" + "\n/avail or /availability: Check which veNUeS are available at a specific location/faculty and given time period" + "\n/nearme: List nearest 10 veNUeS that are available in a given time period\n\n_Note: Above commands assume queries for the current day_"
+    message = "Here is a list of my commands\!\n" + "\n/start: Starts the bot" + "\n/room: Checks whether veNUeS are available in the next hour" + "\n/locations: Lists veNUeS that are currently available in the specified location/faculty" + \
+        "\n/avail or /availability: Check which veNUeS are available at a specific location/faculty and given time period" + \
+        "\n/nearme: List nearest 10 veNUeS that are available in a given time period\n\n_Note: Above commands assume queries for the current day_"
 
     bot.send_message(chat_id=chat_id, text=message, parse_mode="MarkdownV2")
     return
+
 
 @bot.message_handler(commands=['room'])
 def room(message):
@@ -118,21 +122,24 @@ def room(message):
     bot.register_next_step_handler(msg, process_room)
     return
 
+
 def process_room(message):
     chat_id = message.chat.id
     room = message.text.upper()
 
     if room not in VENUES:
-        matches = difflib.get_close_matches(room, VENUES_LIST, cutoff=0.5, n=NUM_RESULTS)
+        matches = difflib.get_close_matches(
+            room, VENUES_LIST, cutoff=0.5, n=NUM_RESULTS)
         buttons = []
         for match in matches:
-            button = InlineKeyboardButton(text=match, callback_data='venue ' + match)
+            button = InlineKeyboardButton(
+                text=match, callback_data='venue ' + match)
             buttons.append([button])
 
         bot.send_message(
-          chat_id=chat_id,
-          text="Venue not found. Did you mean:",
-          reply_markup=InlineKeyboardMarkup(buttons)
+            chat_id=chat_id,
+            text="Venue not found. Did you mean:",
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
         return
 
@@ -140,9 +147,11 @@ def process_room(message):
         bot.reply_to(message, f"{room} is available for the next hour! 🚀")
     else:
 
-        bot.reply_to(message, f"{room} is not available in the next hour :( \nNext available time: {check_availability(room)}\n\nTry /nearme to find available veNUeS near you now!")
+        bot.reply_to(
+            message, f"{room} is not available in the next hour :( \nNext available time: {check_availability(room)}\n\nTry /nearme to find available veNUeS near you now!")
 
     return
+
 
 def check_availability(room):
     day = getCurrentDay()
@@ -167,16 +176,16 @@ def check_availability(room):
     return "Not available today :("
 
 
-
-
 # Get local time rounded up to nearest 30 mins
 def getTimeRounded():
     tz = timezone('Asia/Singapore')
     t = datetime.now(tz)
     min_aware = datetime.min.replace(tzinfo=tz)
-    rounded = t + (min_aware - t) % timedelta(minutes=30) - timedelta(minutes=35)
+    rounded = t + (min_aware - t) % timedelta(minutes=30) - \
+        timedelta(minutes=35)
     current_time = rounded.strftime("%H%M")
     return current_time
+
 
 def getTimeRoundedDown(time):
     time = datetime.strptime(time, "%H%M")
@@ -184,21 +193,26 @@ def getTimeRoundedDown(time):
     time = time + timedelta(minutes=new_minute - time.minute)
     return datetime.strftime(time, "%H%M")
 
+
 def getTimeRoundedUp(time):
     time = datetime.strptime(time, "%H%M")
     new_minute = math.ceil(time.minute / 30) * 30
     time = time + timedelta(minutes=new_minute - time.minute)
     return datetime.strftime(time, "%H%M")
 
+
 def getCurrentDay():
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    days = ["Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday", "Sunday"]
     today = datetime.today().weekday()
     return days[today]
+
 
 def getMapsString(rm):
     lat = str(VENUES[rm]['lat'])
     long = str(VENUES[rm]['long'])
     return "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long
+
 
 @bot.message_handler(commands=['locations'])
 def locations(message):
@@ -207,7 +221,7 @@ def locations(message):
     """
     chat_id = message.chat.id
 
-    chat_text='Select the location/faculty you want!'
+    chat_text = 'Select the location/faculty you want!'
 
     buttons = []
     locationKey = []
@@ -221,19 +235,20 @@ def locations(message):
         for _ in range(3):
             loc = str(locationKey[count])
             button = InlineKeyboardButton(
-              text=str(LOCATIONKEYS[count]),
-              callback_data='location ' + loc
+                text=str(LOCATIONKEYS[count]),
+                callback_data='location ' + loc
             )
             count += 1
             row.append(button)
         buttons.append(row)
 
     bot.send_message(
-      chat_id=chat_id,
-      text=chat_text,
-      reply_markup=InlineKeyboardMarkup(buttons)
+        chat_id=chat_id,
+        text=chat_text,
+        reply_markup=InlineKeyboardMarkup(buttons)
     )
     return
+
 
 @bot.message_handler(commands=['availability', 'avail'])
 def availability(message):
@@ -242,7 +257,7 @@ def availability(message):
     """
     chat_id = message.chat.id
 
-    chat_text='Select the location/faculty you want:'
+    chat_text = 'Select the location/faculty you want:'
 
     buttons = []
     locationKey = []
@@ -256,20 +271,21 @@ def availability(message):
         for _ in range(3):
             loc = str(locationKey[count])
             button = InlineKeyboardButton(
-              text=str(LOCATIONKEYS[count]),
-              callback_data='avail ' + loc
+                text=str(LOCATIONKEYS[count]),
+                callback_data='avail ' + loc
             )
             count += 1
             row.append(button)
         buttons.append(row)
 
     bot.send_message(
-      chat_id=chat_id,
-      text=chat_text,
-      reply_markup=InlineKeyboardMarkup(buttons)
+        chat_id=chat_id,
+        text=chat_text,
+        reply_markup=InlineKeyboardMarkup(buttons)
     )
 
     return
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
@@ -291,7 +307,8 @@ def handle_callback(call):
             if isAvailable(rm):
                 room_dict[rm] = timeAvailable(rm)
 
-        room_dict = dict(sorted(room_dict.items(), key=lambda item: item[1], reverse = True))
+        room_dict = dict(
+            sorted(room_dict.items(), key=lambda item: item[1], reverse=True))
 
         i = 1
         for rm in room_dict:
@@ -302,9 +319,9 @@ def handle_callback(call):
                 break
 
         bot.send_message(
-          chat_id=chat_id,
-          text=chat_message,
-          parse_mode="Markdown"
+            chat_id=chat_id,
+            text=chat_message,
+            parse_mode="Markdown"
         )
         return
 
@@ -312,8 +329,8 @@ def handle_callback(call):
         chat_message = "Please enter start and end time! Time must be in 24 hour format! e.g. 0930-1450"
 
         msg = bot.send_message(
-          chat_id=chat_id,
-          text=chat_message
+            chat_id=chat_id,
+            text=chat_message
         )
         bot.register_next_step_handler(msg, parse_time, data)
 
@@ -328,6 +345,7 @@ def handle_callback(call):
 
     print(f'{chat_id}: Callback not implemented')
 
+
 def parse_time(message, location):
     chat_id = message.chat.id
     message.text = message.text.strip()
@@ -336,8 +354,8 @@ def parse_time(message, location):
 
     if not result:
         bot.send_message(
-          chat_id=chat_id,
-          text="Invalid time. Please try again! :("
+            chat_id=chat_id,
+            text="Invalid time. Please try again! :("
         )
         return
 
@@ -347,8 +365,8 @@ def parse_time(message, location):
 
     if int(end_time) < int(start_time):
         bot.send_message(
-          chat_id=chat_id,
-          text="End time cannot be earlier than start time. Please enter start and end time again"
+            chat_id=chat_id,
+            text="End time cannot be earlier than start time. Please enter start and end time again"
         )
         return
 
@@ -367,11 +385,12 @@ def parse_time(message, location):
             break
 
     bot.send_message(
-      chat_id=chat_id,
-      text=msg,
-      parse_mode="Markdown"
+        chat_id=chat_id,
+        text=msg,
+        parse_mode="Markdown"
     )
     return
+
 
 @bot.message_handler(commands=['nearme'])
 def nearme(message):
@@ -380,7 +399,8 @@ def nearme(message):
     """
     chat_id = message.chat.id
 
-    button = KeyboardButton(text="Tap here to send your current location", request_location=True)
+    button = KeyboardButton(
+        text="Tap here to send your current location", request_location=True)
     markup = ReplyKeyboardMarkup()
     markup.add(button)
 
@@ -391,6 +411,7 @@ def nearme(message):
     )
 
     return
+
 
 @bot.message_handler(content_types=['location'])
 def nearme_callback(message):
@@ -406,19 +427,21 @@ def nearme_callback(message):
     heapq.heapify(pq)
 
     for venue in VENUES:
-        dist = euclidean_distance(lat, long, VENUES[venue]["lat"], VENUES[venue]["long"])
+        dist = euclidean_distance(
+            lat, long, VENUES[venue]["lat"], VENUES[venue]["long"])
         heapq.heappush(pq, (dist, venue))
 
     # ask for start time and end time
     chat_message = "Please enter start and end time! Time must be in 24 hour format! e.g. 0930-1450"
 
     msg = bot.send_message(
-      chat_id=chat_id,
-      text=chat_message
+        chat_id=chat_id,
+        text=chat_message
     )
     bot.register_next_step_handler(msg, nearest_available_venues, pq)
 
     return
+
 
 def nearest_available_venues(message, pq):
     chat_id = message.chat.id
@@ -428,8 +451,8 @@ def nearest_available_venues(message, pq):
 
     if not result:
         bot.send_message(
-          chat_id=chat_id,
-          text="Invalid time. Please try again! :("
+            chat_id=chat_id,
+            text="Invalid time. Please try again! :("
         )
         return
 
@@ -439,8 +462,8 @@ def nearest_available_venues(message, pq):
 
     if int(end_time) < int(start_time):
         bot.send_message(
-          chat_id=chat_id,
-          text="End time cannot be earlier than start time. Please enter start and end time again"
+            chat_id=chat_id,
+            text="End time cannot be earlier than start time. Please enter start and end time again"
         )
         return
 
@@ -453,17 +476,17 @@ def nearest_available_venues(message, pq):
             available_locations.append(rm_tup[1])
             max_results -= 1
 
-
     msg = f"These are the veNUeS that are available from {start_time} to {end_time} near you:"
     for location in available_locations:
         msg += f'\n• [{location}]({getMapsString(location)})'
 
     bot.send_message(
-      chat_id=chat_id,
-      text=msg,
-      parse_mode="Markdown"
+        chat_id=chat_id,
+        text=msg,
+        parse_mode="Markdown"
     )
     return
+
 
 def isAvailable(room):
     day = getCurrentDay()
@@ -484,6 +507,7 @@ def isAvailable(room):
             return False
     return True
 
+
 def isAvailableWithTime(room, start_time, end_time):
     day = getCurrentDay()
 
@@ -497,14 +521,17 @@ def isAvailableWithTime(room, start_time, end_time):
             return True
 
     while int(start_time) < int(end_time):
-        if avail_info.get(start_time): # occupied at start_time
+        if avail_info.get(start_time):  # occupied at start_time
             return False
-        start_time = datetime.strptime(start_time, "%H%M") + timedelta(minutes=30)
+        start_time = datetime.strptime(
+            start_time, "%H%M") + timedelta(minutes=30)
         start_time = datetime.strftime(start_time, "%H%M")
 
     return True
 
 # How much time a room is available for
+
+
 def timeAvailable(room):
     duration_Counter = 0
     t = getTimeRounded()
@@ -530,7 +557,9 @@ def timeAvailable(room):
 
 @bot.message_handler(regexp="/.*")
 def handle_message(message):
-    bot.send_message(chat_id=message.chat.id, text="Sorry, I didn't understand that command. :(")
+    bot.send_message(chat_id=message.chat.id,
+                     text="Sorry, I didn't understand that command. :(")
+
 
 bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
