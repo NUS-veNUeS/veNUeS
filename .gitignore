@@ -1,2 +1,4 @@
 hnr/
 .vscode/
+serviceAccountKey.json
+.env
