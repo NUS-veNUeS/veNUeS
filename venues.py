@@ -578,8 +578,7 @@ def webhook():
     return "!", 200
 
 
-bot.enable_save_next_step_handlers(delay=2)
-bot.load_next_step_handlers()
-
 if __name__ == "__main__":
+    bot.enable_save_next_step_handlers(delay=2)
+    bot.load_next_step_handlers()
     server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
