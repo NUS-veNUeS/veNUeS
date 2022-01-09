@@ -80,7 +80,7 @@ def getMessage():
 @server.route("/")
 def webhook():
    bot.remove_webhook()
-   bot.set_webhook(url='https://nus-venuesbot.herokuapp.com/' + TOKEN)
+   bot.set_webhook(url='https://nus-venuesbot.herokuapp.com/' + API_KEY)
    return "!", 200
 
 # Commands available
