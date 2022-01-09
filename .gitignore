@@ -2,3 +2,5 @@ hnr/
 .vscode/
 serviceAccountKey.json
 .env
+__pycache__/
+.handler-saves/
